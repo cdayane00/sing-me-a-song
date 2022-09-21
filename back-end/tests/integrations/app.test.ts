@@ -135,5 +135,22 @@ describe('Integrantion tests', ()=>{
             expect(res.status).toBe(200);
             expect(res.body).toEqual(last10Recommendations);
         });
+    });
+
+    describe('GET /recommendations/:id', ()=>{
+        it('should return a recommendations search by correct id', async()=>{
+            const recommendation = await createRecommendation();
+            const res = await supertest(app).get(`/recommendations/${recommendation.id}`).send();
+
+            expect(res.status).toBe(200);
+            expect(res.body).toMatchObject(recommendation);
+        });
+
+        it('should not return a recommendations search by incorrect id', async()=>{
+            const id =  faker.datatype.number({max: 0});
+            const res = await supertest(app).get(`/recommendations/${id}`).send();
+
+            expect(res.body).toEqual({});
+        });
     })
 })
