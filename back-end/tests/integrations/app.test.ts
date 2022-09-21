@@ -152,5 +152,22 @@ describe('Integrantion tests', ()=>{
 
             expect(res.body).toEqual({});
         });
+    });
+
+    describe('GET /recommendations/random', ()=>{
+        it('should return a random recommendation', async () => {
+            await createRecommendation({
+                score: faker.datatype.number({min:10})
+            });
+            const res = await supertest(app).get('/recommendations/random').send();
+
+            expect(res.status).toBe(200);
+        });
+
+        it('should not return a random recommendation', async()=>{
+            const res = await supertest(app).get('/recommendations/random').send();
+            
+            expect(res.status).toBe(404);
+        });
     })
 })
