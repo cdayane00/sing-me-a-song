@@ -3,7 +3,7 @@ import supertest from 'supertest';
 import app from '../../src/app';
 import cleanDataBase from '../helpers/cleanDataBase';
 import {createRecommendation, loadRecommendation} from '../factories/recommendationsFactory';
-
+import _ from 'lodash';
 beforeEach(async ()=>{
     await cleanDataBase();
 });
@@ -102,6 +102,38 @@ describe('Integrantion tests', ()=>{
             const result = await loadRecommendation(data.id);
 
             expect(result).toBeNull();
+        });
+    });
+
+    describe('GET /recommendations', ()=>{
+        it('should return 10 recommendations', async ()=>{
+            await Promise.all(
+                _.times(15, async ()=>{
+                    await createRecommendation();
+                })
+            );
+            const res = await supertest(app).get('/recommendations').send();
+
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(10);
+        });
+
+        it('should return the last 10 recommendations', async ()=>{
+            const recommendations = await Promise.all(
+                _.times(15, async ()=>{
+                    return await createRecommendation();
+                })
+            );
+            const recommendationOrderedById = _.orderBy(
+                recommendations, ['id'], ['desc']
+            );
+            const last10Recommendations = _.take(
+                recommendationOrderedById,10
+            );
+            const res = await supertest(app).get('/recommendations').send();
+
+            expect(res.status).toBe(200);
+            expect(res.body).toEqual(last10Recommendations);
         });
     })
 })
