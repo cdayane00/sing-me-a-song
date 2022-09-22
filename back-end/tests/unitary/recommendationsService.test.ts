@@ -44,5 +44,36 @@ describe('Unitary tests', ()=>{
                 message: 'Recommendations names must be unique'
             });
         });
+    });
+
+    describe('upvote', ()=>{
+        it('should get a recommendation by id', async()=>{
+            const recommendation = await createRecommendation();
+            const spy = jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=> recommendation);
+            jest.spyOn(recommendationRepository, 'updateScore').mockImplementationOnce(():any=>{});
+
+            await recommendationService.upvote(recommendation.id);
+
+            expect(spy).toBeCalledWith(recommendation.id);
+        });
+
+        it('should not get a recommendation by id that not exist', async()=>{
+            const id = faker.datatype.number({max: 0});
+            jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=>{});
+            jest.spyOn(recommendationRepository, 'updateScore').mockImplementationOnce(():any=>{});
+            const result = recommendationService.upvote(id);
+
+            expect(result).rejects.toEqual({type: 'not_found', message: ''});
+        });
+
+        it('should call function updateScore with correct data', async()=>{
+            const recommendation = await createRecommendation();
+            jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=>recommendation);
+            const spy = jest.spyOn(recommendationRepository, 'updateScore').mockResolvedValueOnce(recommendation);
+
+            await recommendationService.upvote(recommendation.id);
+
+            expect(spy).toBeCalledWith(recommendation.id, 'increment');
+        });
     })
 })
