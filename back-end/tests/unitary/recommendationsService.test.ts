@@ -75,5 +75,63 @@ describe('Unitary tests', ()=>{
 
             expect(spy).toBeCalledWith(recommendation.id, 'increment');
         });
+    });
+
+    describe('downvote', ()=>{
+        it('should call function find in repository with correct data', async()=>{
+            const recommendation = await createRecommendation();
+            const spy = jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=>recommendation);
+            jest.spyOn(recommendationRepository, 'updateScore').mockImplementationOnce(():any=>{
+                return {...recommendation, score: -1};
+            });
+
+            await recommendationService.downvote(recommendation.id);
+
+            expect(spy).toBeCalledWith(recommendation.id);
+        });
+
+        it('should call function update score with decrement params in repository with correct data', async()=>{
+            const recommendation = await createRecommendation();
+            jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=>recommendation);
+            const spy = jest.spyOn(recommendationRepository, 'updateScore').mockImplementationOnce(():any=>{
+                return {...recommendation, score: -1};
+            });
+
+            await recommendationService.downvote(recommendation.id);
+
+            expect(spy).toBeCalledWith(recommendation.id, 'decrement');
+        });
+
+        it('should call function delete recommendation when update recommendation set score lowest than -5', async ()=>{
+            const recommendation = await createRecommendation({score: -6});
+            jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=>recommendation);
+            jest.spyOn(recommendationRepository, 'updateScore').mockImplementationOnce(():any=>{
+                return {...recommendation, score: recommendation.score -1};
+            });
+            const spy = jest.spyOn(recommendationRepository, 'remove').mockImplementationOnce(():any=>{});
+
+            await recommendationService.downvote(recommendation.id);
+
+            expect(spy).toBeCalledWith(recommendation.id);
+        });
+
+        it('should call function delete recommendation when update recommendation set score lowest than -5', async()=>{
+            const recommendation = await createRecommendation({score: -6});
+            jest.spyOn(recommendationRepository, 'find').mockImplementationOnce(():any=>recommendation);
+            jest.spyOn(recommendationRepository, 'updateScore').mockImplementationOnce(():any=>{
+                return{...recommendation, score: recommendation.score -1};
+            });
+            const spy = jest.spyOn(recommendationRepository, 'remove').mockImplementationOnce(():any=>{});
+
+            await recommendationService.downvote(recommendation.id);
+
+            expect(spy).toBeCalledWith(recommendation.id);
+        });
     })
+
+
 })
+
+afterAll(async () => {
+	await cleanDataBase();
+});
