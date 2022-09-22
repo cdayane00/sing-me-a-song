@@ -1,6 +1,7 @@
 import {faker} from '@faker-js/faker';
 import { Recommendation } from '@prisma/client';
 import { prisma } from '../../src/database';
+import { CreateRecommendationData } from '../../src/services/recommendationsService';
 
 export const createRecommendation = (recommendation: Partial<Recommendation> = {}): Promise<Recommendation> => {
     return prisma.recommendation.create({
@@ -19,4 +20,11 @@ export const loadRecommendation = (id: number): Promise<Recommendation> =>{
             id
         }
     });
+};
+
+export const createRecommendationData = (): CreateRecommendationData =>{
+    return {
+        name: faker.lorem.words(2),
+        youtubeLink: `https://www.youtube.com/${faker.datatype.uuid()}`
+    };
 };
